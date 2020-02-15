@@ -2,7 +2,7 @@ package com.tmobile.sit.ignite.common
 
 import org.scalatest.{FlatSpec, FlatSpecLike, FunSuite}
 import com.holdenkarau.spark.testing.{DataFrameSuiteBase, SparkSessionProvider}
-import com.tmobile.sit.ignite.common.readers.{CSVReader, ExcelReader, MSAccessReader}
+import com.tmobile.sit.ignite.common.readers.{CSVMultifileReader, CSVReader, ExcelReader, MSAccessReader}
 import org.apache.spark.sql.types.{DoubleType, IntegerType, StringType, StructField, StructType}
 import org.apache.spark.sql.{Row, SparkSession}
 import org.scalatest.junit.JUnitRunner
@@ -15,7 +15,7 @@ class ReadersTest extends FlatSpec with DataFrameSuiteBase  {
   "csvReader" should "read csv with header" in {
     import spark.implicits._
 
-    val csvReader = new CSVReader("src/test/resources/testData/testCsv.csv", true)
+    val csvReader = CSVReader("src/test/resources/testData/testCsv.csv", true)
     val df = csvReader.read()
     val refDF = ReferenceData.csv_with_header.toDF
     assertDataFrameEquals(df, refDF) // equal
@@ -26,6 +26,16 @@ class ReadersTest extends FlatSpec with DataFrameSuiteBase  {
     }
 
  */
+  }
+  "csvReader" should "read multiple CSVs with headers" in {
+    import spark.implicits._
+
+    val csvReader = CSVMultifileReader("src/test/resources/testData", Seq("testCsv.csv", "testCsv.csv"),true)
+    val df = csvReader.read()
+    val refDF = ReferenceData.multi_csv.toDF
+   //df.show()
+    assertDataFrameEquals(df, refDF) // equal
+
   }
 
   "mdbReader" should "read mdb file properly" in {

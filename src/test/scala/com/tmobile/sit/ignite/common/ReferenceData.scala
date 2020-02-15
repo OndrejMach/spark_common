@@ -8,6 +8,7 @@ final case class InputRowExcel(BUCHMONAT: Option[String], GESPR_DAUER: Option[Do
 object ReferenceData {
 
   def  csv_with_header = List( InputRowCSV(Some(1),Some(2),Some(3)))
+  def multi_csv = csv_with_header ++ csv_with_header
   def mdb_data_no_schema = List(
     InputRowMDB("201905",	"2993",	"37",	"115.26","201903"),
     InputRowMDB("201905",	"11264",	"66",	"185.51","201902"),
