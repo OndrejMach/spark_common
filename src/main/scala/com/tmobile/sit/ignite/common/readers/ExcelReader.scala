@@ -33,3 +33,12 @@ class ExcelReader(path: String,
       .load(path)
   }
 }
+
+object ExcelReader {
+  def apply(path: String,
+            sheetName: String = "",
+            cellRange: String = "!A1",
+            schema: Option[StructType] = None,
+            dateFormat: String = "yyyy-mm-dd hh:mm:ss")(implicit sparkSession: SparkSession): ExcelReader =
+    new ExcelReader(path, sheetName, cellRange, schema, dateFormat)(sparkSession)
+}

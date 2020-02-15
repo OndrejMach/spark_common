@@ -74,3 +74,8 @@ class MSAccessReader(path: String, tableName: String, schema : Option[StructType
   }
 }
 
+object MSAccessReader {
+  def apply(path: String, tableName: String, schema : Option[StructType] = None)
+           (implicit sparkSession: SparkSession): MSAccessReader =
+    new MSAccessReader(path, tableName, schema)(sparkSession)
+}
