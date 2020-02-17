@@ -1,4 +1,4 @@
-package com.tmobile.sit.ignite.common.config
+package com.tmobile.sit.common.config
 
 import com.typesafe.config.{Config, ConfigFactory}
 

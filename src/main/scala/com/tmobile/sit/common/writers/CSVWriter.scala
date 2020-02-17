@@ -1,4 +1,4 @@
-package com.tmobile.sit.ignite.common.writers
+package com.tmobile.sit.common.writers
 
 import java.io.File
 

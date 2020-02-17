@@ -1,6 +1,6 @@
-package com.tmobile.sit.ignite.common.config
+package com.tmobile.sit.common.config
 
-import com.tmobile.sit.ignite.common.Logger
+import com.tmobile.sit.common.Logger
 
 abstract class GenericSettings extends Logger {
   def printMissingFields(): Unit = {

@@ -1,8 +1,8 @@
-package com.tmobile.sit.ignite.common.readers
+package com.tmobile.sit.common.readers
 
 import java.sql.{DriverManager, ResultSet}
 
-import com.tmobile.sit.ignite.common.Logger
+import com.tmobile.sit.common.Logger
 import org.apache.spark.sql.types.{DoubleType, IntegerType, StructType}
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 

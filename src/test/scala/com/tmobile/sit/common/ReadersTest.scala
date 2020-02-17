@@ -1,12 +1,12 @@
-package com.tmobile.sit.ignite.common
+package com.tmobile.sit.common
 
-import org.scalatest.{FlatSpec, FlatSpecLike, FunSuite}
-import com.holdenkarau.spark.testing.{DataFrameSuiteBase, SparkSessionProvider}
-import com.tmobile.sit.ignite.common.readers.{CSVMultifileReader, CSVReader, ExcelReader, MSAccessReader}
-import org.apache.spark.sql.types.{DoubleType, IntegerType, StringType, StructField, StructType}
-import org.apache.spark.sql.{Row, SparkSession}
-import org.scalatest.junit.JUnitRunner
+import com.holdenkarau.spark.testing.DataFrameSuiteBase
+import com.tmobile.sit.common.readers.{CSVMultifileReader, CSVReader, ExcelReader, MSAccessReader}
+import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.types.{DoubleType, StringType, StructField, StructType}
 import org.junit.runner.RunWith
+import org.scalatest.FlatSpec
+import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
 class ReadersTest extends FlatSpec with DataFrameSuiteBase  {

@@ -1,6 +1,6 @@
-package com.tmobile.sit.ignite.common.readers
+package com.tmobile.sit.common.readers
 
-import com.tmobile.sit.ignite.common.Logger
+import com.tmobile.sit.common.Logger
 import org.apache.spark.sql.{DataFrame, DataFrameReader, Dataset, SparkSession}
 import org.apache.spark.sql.types.StructType
 

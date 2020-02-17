@@ -1,4 +1,4 @@
-package com.tmobile.sit.ignite.common
+package com.tmobile.sit.common
 
 import org.slf4j.LoggerFactory
 

@@ -1,4 +1,4 @@
-package com.tmobile.sit.ignite.common
+package com.tmobile.sit.common
 
 final case class InputRowCSV(id: Option[Int], number: Option[Int], string: Option[Int])
 final case class InputRowMDB(BUCHMONAT: String, GESPR_DAUER: String,ANZ_VERB: String, EURO: String, LEISTUNGSMONAT: String )

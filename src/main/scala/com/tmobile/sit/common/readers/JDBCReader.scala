@@ -1,4 +1,4 @@
-package com.tmobile.sit.ignite.common.readers
+package com.tmobile.sit.common.readers
 
 import java.util.Properties
 
