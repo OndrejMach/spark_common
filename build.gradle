@@ -1,4 +1,4 @@
-group 'ignite'
+group 'spark_common'
 version '1.0-SNAPSHOT'
 
 apply plugin: 'scala'
