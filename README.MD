@@ -16,6 +16,7 @@ val df = csvReader.read() // DataFrame
 ```
 CSV Readers are implemented in two instances: one reads a single CSV file, second is able to read muptiple files (Seq of filenames) for a path putting all the data in a single returned DataFrame.
 All the Readers can be heavily parametrised depending on the structures they are supposed to read. You can specify schema in the spark format, infer one, define certain special behaviour such as escape character, quoting character etc. All the parameters are normally defaulted to the common values. It is generally recommended to specify schema even though this parameter is optional.
+
 3) Writers - Classes which can be used for writing CSVs, Excel files, JDBC data stores. Follow very similar approach you can see in readers. Again all of them implement trait Writer which is a useful fact for testing and other potential enhancements.
 4) Logger - creates an instance of SLF4J Logger which can be configured in log4j.properties file. Extending your classed with the Logger trait implemented here will give you ***logger*** which can be used.. guess for... logging.
 
