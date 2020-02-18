@@ -15,7 +15,7 @@ class ReadersTest extends FlatSpec with DataFrameSuiteBase  {
   "csvReader" should "read csv with header" in {
     import spark.implicits._
 
-    val csvReader = CSVReader("src/test/resources/testData/testCsv.csv", true)
+    val csvReader = CSVReader("src/test/resources/testData/testCsv.csv", header = true)
     val df = csvReader.read()
     val refDF = ReferenceData.csv_with_header.toDF
     assertDataFrameEquals(df, refDF) // equal
