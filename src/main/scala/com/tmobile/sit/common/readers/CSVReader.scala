@@ -4,8 +4,17 @@ import com.tmobile.sit.common.Logger
 import org.apache.spark.sql.{DataFrame, DataFrameReader, Dataset, SparkSession}
 import org.apache.spark.sql.types.StructType
 
-//case class myCSV(id: Int, name: String)
 
+/**
+ * Reading CSVs and returning dataframe. For better testability all readers implement trait Reader.
+ * There are two versions of CSV readers - one reading a particular csv file and second capable of reading multiple CSVs
+ * from a folder (CSVs must have the same schema of course).
+ * @author Ondrej Machacek
+ */
+
+/**
+ * Abstract class to extract common characteristics of CSV file rearing in spark. Any new CSV reader alternative should inherit from this one.
+ */
 private[readers] abstract class CsvGenericReader extends Logger{
   def getCSVReader(header: Boolean,
                    badRecordsPath: Option[String] = None,
@@ -37,6 +46,18 @@ private[readers] abstract class CsvGenericReader extends Logger{
   }
 }
 
+/**
+ * Basic CSV reader reading a single file, returning dataframe.
+ * @param path path to the file
+ * @param header indicates wheter file contains a header on the first line.
+ * @param badRecordsPath path to the folder where invalid records will be stored - not used when None - default.
+ * @param delimiter you can specify here a delimiter char. by default ',' is used.
+ * @param quote character used for quoting, by default it's '"'
+ * @param escape escape character to input specila chars - by default '\'
+ * @param encoding test encoding - by default UTF-8
+ * @param schema using spark types you can define Typed schema - it's highly recommended to us this parameter. By default schema is inferred.
+ * @param sparkSession implicit SparkSession used for reading.
+ */
 class CSVReader(path: String,
                 header: Boolean,
                 badRecordsPath: Option[String] = None,
@@ -56,7 +77,20 @@ class CSVReader(path: String,
 
   override def read(): DataFrame = getCsvData(path)
 }
-
+/**
+ * A little enhanced CSV reader capable of reading multiple csv files from a single path. Result is a single dataframe (union-ed data from each CSV).
+ * CSV files must have the same structure.
+ * @param path path to the file
+ * @param fileList list of filenames to be read from the path
+ * @param header indicates wheter file contains a header on the first line.
+ * @param badRecordsPath path to the folder where invalid records will be stored - not used when None - default.
+ * @param delimiter you can specify here a delimiter char. by default ',' is used.
+ * @param quote character used for quoting, by default it's '"'
+ * @param escape escape character to input specila chars - by default '\'
+ * @param encoding test encoding - by default UTF-8
+ * @param schema using spark types you can define Typed schema - it's highly recommended to us this parameter. By default schema is inferred.
+ * @param sparkSession implicit SparkSession used for reading.
+ */
 class CSVMultifileReader(path: String, fileList: Seq[String],
                                  header: Boolean,
                                  badRecordsPath: Option[String] = None,
@@ -76,6 +110,10 @@ class CSVMultifileReader(path: String, fileList: Seq[String],
   override def read(): DataFrame = getCsvData(path)
 }
 
+/**
+ * Companion object for the simple CSV reader
+ */
+
 object CSVReader {
   def apply(path: String,
             header: Boolean,
@@ -89,6 +127,9 @@ object CSVReader {
     new CSVReader(path, header, badRecordsPath, delimiter, quote, escape, encoding, schema)(sparkSession)
 }
 
+/**
+ * Companion object for the multifile CSV reader
+ */
 object CSVMultifileReader {
   def apply(path: String,
             fileList: Seq[String],

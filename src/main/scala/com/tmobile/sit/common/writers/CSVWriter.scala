@@ -6,6 +6,21 @@ import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, FileUtil, Path}
 import org.apache.spark.sql.{DataFrame, SaveMode, SparkSession}
 
+/**
+ * CSV Writer class. An instance is able to write CSV files according to the class parameters. It implements method writaData which writes
+ * input DataFrame. Writer by default creates just one single partition and creates a CSV file, not folder as regular Spark csv writer does.
+ * @author Ondrej Machacek
+ *
+ * @param path - path and filename for the resulting file. Its a regular file, not folder!
+ * @param delimiter - delimiter used in the file
+ * @param writeHeader - if true header is written as the first line
+ * @param quote - quoting character
+ * @param escape - used escape character
+ * @param encoding - file text encoding
+ * @param quoteMode - what is encoded basically. Read spark csv writer documentation for details.
+ * @param sparkSession - implicit SparkSession for writing.
+ */
+
 class CSVWriter(path: String,
                 delimiter: String = ",", writeHeader: Boolean = true,
                 quote: String = "\"", escape: String = "\\",

@@ -8,16 +8,24 @@ import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 
 import scala.collection.JavaConverters._
 
-trait AccessFileReader extends Logger {
-  def getData(): DataFrame
-}
-
-/*
-question is whether to return typed structures, at the moment all is typed to String
+/**
+ * Reader of MS Access files. Class extends trait Reader. Dataframe is returned with schema, and data types - either via schema parameter
+ *  or automatically. Currently automatic schema inferring supports String, Int and Double  - all the other types are transformed to String.
+ * @author Ondrej Machacek
+ *
+ * @param path - file path
+ * @param tableName - name of the table in the MS Access file
+ * @param schema - defines spark-stype schema for the data. If schema is null it is automatically inferred.
+ * @param sparkSession  - implicit SparkSession
  */
 class MSAccessReader(path: String, tableName: String, schema : Option[StructType] = None)(implicit sparkSession: SparkSession) extends Reader {
   private val conn = DriverManager.getConnection(s"jdbc:ucanaccess://${path}")
 
+  /**
+   * Supporting function for automatic schema inferring. It supports Int, Double and String. All other types casted to String.
+   * @param data - data from the MS Access table
+   * @return casted data
+   */
   private def cast(data: Seq[String]) : Row = {
     val typedSeq = for {i<- 0 to (data.length-1)} yield {
       schema.get.fields(i).dataType match  {
@@ -29,6 +37,12 @@ class MSAccessReader(path: String, tableName: String, schema : Option[StructType
     Row.fromSeq(typedSeq)
   }
 
+  /**
+   * Supporting function for transforming JDBC ResultSet to DataFrame
+   * @param resultSet - MS Access's query JDBC ResultSet
+   * @param sparkSession - implicit SparkSession for reading and transformation
+   * @return - DataFrame transformed from the ResultSet
+   */
   private def resultSetToDataFrame(resultSet: ResultSet)(implicit sparkSession: SparkSession): DataFrame = {
 
     val columnCount = resultSet.getMetaData.getColumnCount
@@ -61,7 +75,9 @@ class MSAccessReader(path: String, tableName: String, schema : Option[StructType
     }
   }
 
-
+  /**
+   * Read function - getting MS Access file, returning DataFrame.
+   */
   val read: DataFrame = {
     logger.info(s"Getting data from file ${path}, table: ${tableName}")
     val st = conn.createStatement
