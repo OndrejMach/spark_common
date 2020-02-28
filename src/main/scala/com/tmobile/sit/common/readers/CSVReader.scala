@@ -9,27 +9,31 @@ import org.apache.spark.sql.types.StructType
  * Reading CSVs and returning dataframe. For better testability all readers implement trait Reader.
  * There are two versions of CSV readers - one reading a particular csv file and second capable of reading multiple CSVs
  * from a folder (CSVs must have the same schema of course).
+ *
  * @author Ondrej Machacek
  */
 
 /**
  * Abstract class to extract common characteristics of CSV file rearing in spark. Any new CSV reader alternative should inherit from this one.
  */
-private[readers] abstract class CsvGenericReader extends Logger{
+private[readers] abstract class CsvGenericReader extends Logger {
   def getCSVReader(header: Boolean,
                    badRecordsPath: Option[String] = None,
                    delimiter: String = ",",
                    quote: String = "\"",
                    escape: String = "\\",
                    encoding: String = "UTF-8",
-                   schema: Option[StructType] = None)(implicit sparkSession: SparkSession): DataFrameReader  = {
+                   schema: Option[StructType] = None,
+                   timestampFormat: String = "MM/dd/yyyy HH:mm:ss.SSSZZ"
+                  )(implicit sparkSession: SparkSession): DataFrameReader = {
     val reader = sparkSession
       .read
       .option("header", if (header) "true" else "false")
-      .option("quote", quote )
+      .option("quote", quote)
       .option("escape", escape)
       .option("delimiter", delimiter)
-      .option("encoding",encoding )
+      .option("encoding", encoding)
+      .option("timestampFormat", timestampFormat)
 
     val invalidHandling = if (badRecordsPath.isDefined) {
       logger.info(s"Bad records to be stored in ${badRecordsPath.get}")
@@ -48,15 +52,17 @@ private[readers] abstract class CsvGenericReader extends Logger{
 
 /**
  * Basic CSV reader reading a single file, returning dataframe.
- * @param path path to the file
- * @param header indicates wheter file contains a header on the first line.
+ *
+ * @param path           path to the file
+ * @param header         indicates wheter file contains a header on the first line.
  * @param badRecordsPath path to the folder where invalid records will be stored - not used when None - default.
- * @param delimiter you can specify here a delimiter char. by default ',' is used.
- * @param quote character used for quoting, by default it's '"'
- * @param escape escape character to input specila chars - by default '\'
- * @param encoding test encoding - by default UTF-8
- * @param schema using spark types you can define Typed schema - it's highly recommended to us this parameter. By default schema is inferred.
- * @param sparkSession implicit SparkSession used for reading.
+ * @param delimiter      you can specify here a delimiter char. by default ',' is used.
+ * @param quote          character used for quoting, by default it's '"'
+ * @param escape         escape character to input specila chars - by default '\'
+ * @param encoding       test encoding - by default UTF-8
+ * @param schema         using spark types you can define Typed schema - it's highly recommended to us this parameter. By default schema is inferred.
+ * @param timestampFormat format for timestamp data
+ * @param sparkSession   implicit SparkSession used for reading.
  */
 class CSVReader(path: String,
                 header: Boolean,
@@ -65,45 +71,50 @@ class CSVReader(path: String,
                 quote: String = "\"",
                 escape: String = "\\",
                 encoding: String = "UTF-8",
-                schema: Option[StructType] = None)
+                schema: Option[StructType] = None,
+                timestampFormat: String = "MM/dd/yyyy HH:mm:ss.SSSZZ")
                (implicit sparkSession: SparkSession) extends CsvGenericReader with Reader {
 
   private def getCsvData(path: String): DataFrame = {
     logger.info(s"Reading CSV from path ${path}")
-    val reader = getCSVReader(header, badRecordsPath, delimiter, quote, escape, encoding, schema)
+    val reader = getCSVReader(header, badRecordsPath, delimiter, quote, escape, encoding, schema, timestampFormat)
     reader.csv(path)
 
   }
 
   override def read(): DataFrame = getCsvData(path)
 }
+
 /**
  * A little enhanced CSV reader capable of reading multiple csv files from a single path. Result is a single dataframe (union-ed data from each CSV).
  * CSV files must have the same structure.
- * @param path path to the file
- * @param fileList list of filenames to be read from the path
- * @param header indicates wheter file contains a header on the first line.
+ *
+ * @param path           path to the file
+ * @param fileList       list of filenames to be read from the path
+ * @param header         indicates wheter file contains a header on the first line.
  * @param badRecordsPath path to the folder where invalid records will be stored - not used when None - default.
- * @param delimiter you can specify here a delimiter char. by default ',' is used.
- * @param quote character used for quoting, by default it's '"'
- * @param escape escape character to input specila chars - by default '\'
- * @param encoding test encoding - by default UTF-8
- * @param schema using spark types you can define Typed schema - it's highly recommended to us this parameter. By default schema is inferred.
- * @param sparkSession implicit SparkSession used for reading.
+ * @param delimiter      you can specify here a delimiter char. by default ',' is used.
+ * @param quote          character used for quoting, by default it's '"'
+ * @param escape         escape character to input specila chars - by default '\'
+ * @param encoding       test encoding - by default UTF-8
+ * @param schema         using spark types you can define Typed schema - it's highly recommended to us this parameter. By default schema is inferred.
+ * @param timestampFormat format for timestamp data
+ * @param sparkSession   implicit SparkSession used for reading.
  */
 class CSVMultifileReader(path: String, fileList: Seq[String],
-                                 header: Boolean,
-                                 badRecordsPath: Option[String] = None,
-                                 delimiter: String = ",",
-                                 quote: String = "\"",
-                                 escape: String = "\\",
-                                 encoding: String = "UTF-8",
-                                 schema: Option[StructType] = None)
-                                (implicit sparkSession: SparkSession) extends CsvGenericReader  with Reader {
+                         header: Boolean,
+                         badRecordsPath: Option[String] = None,
+                         delimiter: String = ",",
+                         quote: String = "\"",
+                         escape: String = "\\",
+                         encoding: String = "UTF-8",
+                         schema: Option[StructType] = None,
+                         timestampFormat: String = "MM/dd/yyyy HH:mm:ss.SSSZZ")
+                        (implicit sparkSession: SparkSession) extends CsvGenericReader with Reader {
   private def getCsvData(path: String): DataFrame = {
     logger.info(s"Reading CSV from path ${path}")
-    val reader = getCSVReader(header, badRecordsPath, delimiter, quote, escape, encoding, schema)
-    reader.csv(fileList.map(path+"/"+_) :_*)
+    val reader = getCSVReader(header, badRecordsPath, delimiter, quote, escape, encoding, schema, timestampFormat)
+    reader.csv(fileList.map(path + "/" + _): _*)
 
   }
 
@@ -122,9 +133,10 @@ object CSVReader {
             quote: String = "\"",
             escape: String = "\\",
             encoding: String = "UTF-8",
+            timestampFormat: String =  "MM/dd/yyyy HH:mm:ss.SSSZZ",
             schema: Option[StructType] = None)(implicit sparkSession: SparkSession): CSVReader =
 
-    new CSVReader(path, header, badRecordsPath, delimiter, quote, escape, encoding, schema)(sparkSession)
+    new CSVReader(path, header, badRecordsPath, delimiter, quote, escape, encoding, schema, timestampFormat)(sparkSession)
 }
 
 /**
@@ -139,8 +151,9 @@ object CSVMultifileReader {
             quote: String = "\"",
             escape: String = "\\",
             encoding: String = "UTF-8",
+            timestampFormat: String =  "MM/dd/yyyy HH:mm:ss.SSSZZ",
             schema: Option[StructType] = None)
            (implicit sparkSession: SparkSession): CSVMultifileReader =
 
-    new CSVMultifileReader(path, fileList, header, badRecordsPath, delimiter, quote, escape, encoding, schema)(sparkSession)
+    new CSVMultifileReader(path, fileList, header, badRecordsPath, delimiter, quote, escape, encoding, schema, timestampFormat)(sparkSession)
 }
