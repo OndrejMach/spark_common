@@ -27,3 +27,9 @@ class ExcelWriter(filename: String,  sheetName: String = "", cellRange: String =
 
   }
 }
+
+object ExcelWriter {
+  def apply(filename: String,
+            sheetName: String = "",
+            cellRange: String = "A1" ): ExcelWriter = new ExcelWriter(filename, sheetName, cellRange)
+}

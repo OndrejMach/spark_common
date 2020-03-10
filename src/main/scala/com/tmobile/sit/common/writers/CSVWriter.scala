@@ -52,3 +52,16 @@ class CSVWriter(path: String,
     merge(path+"_tmp", path)
   }
 }
+
+object CSVWriter {
+  def apply(path: String,
+            delimiter: String = ",",
+            writeHeader: Boolean = true,
+            quote: String = "\"",
+            escape: String = "\\",
+            encoding: String = "UTF-8",
+            quoteMode: String = "MINIMAL")
+           (implicit sparkSession: SparkSession): CSVWriter =
+
+    new CSVWriter(path, delimiter, writeHeader, quote, escape, encoding, quoteMode)(sparkSession)
+}

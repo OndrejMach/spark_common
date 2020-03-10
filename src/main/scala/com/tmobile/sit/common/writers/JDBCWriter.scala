@@ -20,3 +20,7 @@ class JDBCWriter(url: String, table: String, connectionProperties: Properties) e
       .jdbc(url, table, connectionProperties)
   }
 }
+
+object JDBCWriter {
+  def apply(url: String, table: String, connectionProperties: Properties): JDBCWriter = new JDBCWriter(url, table, connectionProperties)
+}
