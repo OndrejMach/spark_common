@@ -7,5 +7,5 @@ import org.apache.spark.sql.DataFrame
  * Writer interface for basically any writer class implemented here.
  */
 trait Writer extends Logger {
-  def writeData(data: DataFrame) : Unit
+  def writeData() : Unit
 }

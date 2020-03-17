@@ -2,9 +2,20 @@ package com.tmobile.sit.common.writers
 
 import java.io.File
 
+import com.tmobile.sit.common.Logger
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, FileUtil, Path}
 import org.apache.spark.sql.{DataFrame, SaveMode, SparkSession}
+
+private[writers] abstract class Merger extends Logger {
+  def merge(srcPath: String, dstPath: String): Unit = {
+    logger.info(s"Merging spark output ${srcPath} into a single file ${dstPath}")
+    val hadoopConfig = new Configuration()
+    val hdfs = FileSystem.get(hadoopConfig)
+    FileUtil.fullyDelete(new File(dstPath))
+    FileUtil.copyMerge(hdfs, new Path(srcPath), hdfs, new Path(dstPath), true, hadoopConfig, null)
+  }
+}
 
 /**
  * CSV Writer class. An instance is able to write CSV files according to the class parameters. It implements method writaData which writes
@@ -21,21 +32,16 @@ import org.apache.spark.sql.{DataFrame, SaveMode, SparkSession}
  * @param sparkSession - implicit SparkSession for writing.
  */
 
-class CSVWriter(path: String,
+class CSVWriter(data: DataFrame,
+                 path: String,
                 delimiter: String = ",", writeHeader: Boolean = true,
                 quote: String = "\"", escape: String = "\\",
-                encoding: String = "UTF-8", quoteMode: String = "MINIMAL" )(implicit sparkSession: SparkSession) extends Writer {
-
-  private def merge(srcPath: String, dstPath: String): Unit = {
-    logger.info(s"Merging spark output ${srcPath} into a single file ${dstPath}")
-    val hadoopConfig = new Configuration()
-    val hdfs = FileSystem.get(hadoopConfig)
-    FileUtil.fullyDelete(new File(dstPath))
-    FileUtil.copyMerge(hdfs, new Path(srcPath), hdfs, new Path(dstPath), true, hadoopConfig, null)
-  }
+                encoding: String = "UTF-8", quoteMode: String = "MINIMAL",
+                timestampFormat: String = "MM/dd/yyyy HH:mm:ss.SSSZZ",
+                dateFormat: String = "yyyy-MM-dd")(implicit sparkSession: SparkSession) extends Merger with Writer {
 
 
-  def writeData(data: DataFrame) : Unit = {
+  def writeData() : Unit = {
     logger.info(s"Writing data to ${path} " )
     data
       .coalesce(1)
@@ -47,6 +53,8 @@ class CSVWriter(path: String,
       .option("escape", escape)
       .option("quoteMode",quoteMode )
       .option("encoding", encoding)
+      .option("timestampFormat", timestampFormat)
+      .option("dateFormat", dateFormat)
       .csv(path+"_tmp")
 
     merge(path+"_tmp", path)
@@ -54,14 +62,18 @@ class CSVWriter(path: String,
 }
 
 object CSVWriter {
-  def apply(path: String,
+  def apply(data: DataFrame,
+             path: String,
             delimiter: String = ",",
             writeHeader: Boolean = true,
             quote: String = "\"",
             escape: String = "\\",
             encoding: String = "UTF-8",
-            quoteMode: String = "MINIMAL")
+            quoteMode: String = "MINIMAL",
+            timestampFormat: String = "MM/dd/yyyy HH:mm:ss.SSSZZ",
+            dateFormat: String = "yyyy-MM-dd")
            (implicit sparkSession: SparkSession): CSVWriter =
 
-    new CSVWriter(path, delimiter, writeHeader, quote, escape, encoding, quoteMode)(sparkSession)
+    new CSVWriter(data,path, delimiter, writeHeader, quote, escape, encoding, quoteMode, timestampFormat, dateFormat)(sparkSession)
 }
+

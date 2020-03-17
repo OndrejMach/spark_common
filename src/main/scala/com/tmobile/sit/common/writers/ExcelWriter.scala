@@ -9,8 +9,8 @@ import org.apache.spark.sql.{DataFrame, SaveMode}
  * @param sheetName - sheet name to write into
  * @param cellRange - cell range for writing within the sheet specified
  */
-class ExcelWriter(filename: String,  sheetName: String = "", cellRange: String = "A1" ) extends Writer {
-  override def writeData(data: DataFrame): Unit = {
+class ExcelWriter(data: DataFrame,filename: String,  sheetName: String = "", cellRange: String = "A1" ) extends Writer {
+  override def writeData(): Unit = {
     logger.info(s"Writing data to ${filename}, sheet: ${sheetName}")
     data
       .coalesce(1)
@@ -29,7 +29,8 @@ class ExcelWriter(filename: String,  sheetName: String = "", cellRange: String =
 }
 
 object ExcelWriter {
-  def apply(filename: String,
+  def apply(data: DataFrame,
+             filename: String,
             sheetName: String = "",
-            cellRange: String = "A1" ): ExcelWriter = new ExcelWriter(filename, sheetName, cellRange)
+            cellRange: String = "A1" ): ExcelWriter = new ExcelWriter(data: DataFrame,filename, sheetName, cellRange)
 }
