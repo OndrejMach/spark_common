@@ -23,6 +23,7 @@ private[writers] abstract class Merger extends Logger {
  * @author Ondrej Machacek
  *
  * @param path - path and filename for the resulting file. Its a regular file, not folder!
+ * @param mergeToSingleFile - if true a single csv file is created - no folder (as spark does it) is there - default is true
  * @param delimiter - delimiter used in the file
  * @param writeHeader - if true header is written as the first line
  * @param quote - quoting character
@@ -33,7 +34,7 @@ private[writers] abstract class Merger extends Logger {
  */
 
 class CSVWriter(data: DataFrame,
-                 path: String,
+                 path: String, mergeToSingleFile: Boolean = true,
                 delimiter: String = ",", writeHeader: Boolean = true,
                 quote: String = "\"", escape: String = "\\",
                 encoding: String = "UTF-8", quoteMode: String = "MINIMAL",
@@ -57,13 +58,13 @@ class CSVWriter(data: DataFrame,
       .option("dateFormat", dateFormat)
       .csv(path+"_tmp")
 
-    merge(path+"_tmp", path)
+    if (mergeToSingleFile) merge(path+"_tmp", path)
   }
 }
 
 object CSVWriter {
   def apply(data: DataFrame,
-             path: String,
+             path: String, mergeToSingleFile: Boolean = true,
             delimiter: String = ",",
             writeHeader: Boolean = true,
             quote: String = "\"",
@@ -74,6 +75,6 @@ object CSVWriter {
             dateFormat: String = "yyyy-MM-dd")
            (implicit sparkSession: SparkSession): CSVWriter =
 
-    new CSVWriter(data,path, delimiter, writeHeader, quote, escape, encoding, quoteMode, timestampFormat, dateFormat)(sparkSession)
+    new CSVWriter(data,path,mergeToSingleFile ,delimiter, writeHeader, quote, escape, encoding, quoteMode, timestampFormat, dateFormat)(sparkSession)
 }
 

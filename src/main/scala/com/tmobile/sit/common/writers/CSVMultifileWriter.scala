@@ -7,6 +7,7 @@ import org.apache.spark.sql.{DataFrame, SparkSession}
  * @author Ondrej Machacek
  *
  * @param dataToWrite - path and dataframe to write. The result is a regular file, not folder!
+ * @param mergeToSingleFile - if true a single csv file is created - no folder (as spark does it) is there - default is true
  * @param delimiter - delimiter used in the file
  * @param writeHeader - if true header is written as the first line
  * @param quote - quoting character
@@ -15,7 +16,7 @@ import org.apache.spark.sql.{DataFrame, SparkSession}
  * @param quoteMode - what is encoded basically. Read spark csv writer documentation for details.
  * @param sparkSession - implicit SparkSession for writing.
  */
-class CSVMultifileWriter(dataToWrite: Map[String,DataFrame],
+class CSVMultifileWriter(dataToWrite: Map[String,DataFrame], mergeToSingleFile: Boolean = true,
                          delimiter: String = ",", writeHeader: Boolean = true,
                          quote: String = "\"", escape: String = "\\",
                          encoding: String = "UTF-8", quoteMode: String = "MINIMAL",
@@ -29,7 +30,7 @@ class CSVMultifileWriter(dataToWrite: Map[String,DataFrame],
         writeHeader = writeHeader, quote= quote,
         escape = escape, encoding = encoding,
         quoteMode = quoteMode, timestampFormat = timestampFormat,
-        dateFormat = dateFormat).writeData()
+        dateFormat = dateFormat, mergeToSingleFile=mergeToSingleFile).writeData()
     }
 
     dataToWrite.foreach(i => write(i._2, i._1))
@@ -37,11 +38,11 @@ class CSVMultifileWriter(dataToWrite: Map[String,DataFrame],
 }
 
 object CSVMultifileWriter {
-  def apply(dataToWrite: Map[String, DataFrame],
+  def apply(dataToWrite: Map[String, DataFrame], mergeToSingleFile: Boolean = true,
             delimiter: String = ",", writeHeader: Boolean = true,
             quote: String = "\"", escape: String = "\\",
             encoding: String = "UTF-8", quoteMode: String = "MINIMAL",
             timestampFormat: String = "MM/dd/yyyy HH:mm:ss.SSSZZ", dateFormat: String = "yyyy-MM-dd")
     (implicit sparkSession: SparkSession): CSVMultifileWriter
-  = new CSVMultifileWriter(dataToWrite, delimiter, writeHeader, quote, escape, encoding, quoteMode, timestampFormat, dateFormat)(sparkSession)
+  = new CSVMultifileWriter(dataToWrite,mergeToSingleFile ,delimiter, writeHeader, quote, escape, encoding, quoteMode, timestampFormat, dateFormat)(sparkSession)
 }
