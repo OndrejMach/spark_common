@@ -12,7 +12,8 @@ private[writers] abstract class Merger extends Logger {
     logger.info(s"Merging spark output ${srcPath} into a single file ${dstPath}")
     val hadoopConfig = new Configuration()
     val hdfs = FileSystem.get(hadoopConfig)
-    FileUtil.fullyDelete(new File(dstPath))
+    hdfs.delete(new Path(dstPath), true)
+    //FileUtil.fullyDelete(new File(dstPath))
     FileUtil.copyMerge(hdfs, new Path(srcPath), hdfs, new Path(dstPath), true, hadoopConfig, null)
   }
 }

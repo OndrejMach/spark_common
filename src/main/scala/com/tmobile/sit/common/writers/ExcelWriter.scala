@@ -17,7 +17,7 @@ class ExcelWriter(data: DataFrame,filename: String,  sheetName: String = "", cel
       .write
       .format("com.crealytics.spark.excel")
       .option("sheetName", s"${sheetName}${cellRange}")
-      .option("useHeader", "true")
+      .option("header", "true")
       .option("dateFormat", "yy-mmm-d")
       .option("timestampFormat", "mm-dd-yyyy hh:mm:ss")
       .mode(SaveMode.Overwrite)

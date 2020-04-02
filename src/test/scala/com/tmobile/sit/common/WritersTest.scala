@@ -1,7 +1,7 @@
 package com.tmobile.sit.common
 
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
-import com.tmobile.sit.common.writers.CSVMultifileWriter
+import com.tmobile.sit.common.writers.{CSVMultifileWriter, ExcelWriter}
 import org.apache.spark.sql.SparkSession
 import org.junit.runner.RunWith
 import org.scalatest.FlatSpec
@@ -18,5 +18,13 @@ class WritersTest extends FlatSpec with DataFrameSuiteBase  {
    CSVMultifileWriter(data).writeData()
   }
 
+
+  "excel file" should "be written properly" in {
+    import spark.implicits._
+
+    val data = ReferenceData.multi_csv.toDF()
+
+    ExcelWriter(data, "tmp/excelWriter.xlsx").writeData()
+  }
 
 }
