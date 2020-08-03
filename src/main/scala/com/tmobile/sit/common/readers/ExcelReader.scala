@@ -28,7 +28,7 @@ class ExcelReader(path: String,
     val dfReader = sparkSession.read
       .format("com.crealytics.spark.excel")
       .option("dataAddress", s"${sheetName}${cellRange}") // Optional, default: "A1"
-      .option("useHeader", "true") // Required
+      .option("header", "true") // Required
       .option("treatEmptyValuesAsNulls", "true") // Optional, default: true
       .option("timestampFormat", dateFormat) // Optional, default: yyyy-mm-dd hh:mm:ss[.fffffffff]
 
