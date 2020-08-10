@@ -21,7 +21,7 @@ class CSVMultifileWriter(dataToWrite: Map[String,DataFrame], mergeToSingleFile: 
                          quote: String = "\"", escape: String = "\\",
                          encoding: String = "UTF-8", quoteMode: String = "MINIMAL",
                          timestampFormat: String = "MM/dd/yyyy HH:mm:ss.SSSZZ",
-                         dateFormat: String = "yyyy-MM-dd")(implicit sparkSession: SparkSession) extends Writer {
+                         dateFormat: String = "yyyy-MM-dd",nullValue: String = "")(implicit sparkSession: SparkSession) extends Writer {
 
   override def writeData(): Unit = {
     def write(data:DataFrame, path: String) = {
@@ -30,7 +30,7 @@ class CSVMultifileWriter(dataToWrite: Map[String,DataFrame], mergeToSingleFile: 
         writeHeader = writeHeader, quote= quote,
         escape = escape, encoding = encoding,
         quoteMode = quoteMode, timestampFormat = timestampFormat,
-        dateFormat = dateFormat, mergeToSingleFile=mergeToSingleFile).writeData()
+        dateFormat = dateFormat, mergeToSingleFile=mergeToSingleFile, nullValue = nullValue).writeData()
     }
 
     dataToWrite.foreach(i => write(i._2, i._1))
@@ -42,7 +42,7 @@ object CSVMultifileWriter {
             delimiter: String = ",", writeHeader: Boolean = true,
             quote: String = "\"", escape: String = "\\",
             encoding: String = "UTF-8", quoteMode: String = "MINIMAL",
-            timestampFormat: String = "MM/dd/yyyy HH:mm:ss.SSSZZ", dateFormat: String = "yyyy-MM-dd")
+            timestampFormat: String = "MM/dd/yyyy HH:mm:ss.SSSZZ", dateFormat: String = "yyyy-MM-dd", nullValue: String = "")
     (implicit sparkSession: SparkSession): CSVMultifileWriter
-  = new CSVMultifileWriter(dataToWrite,mergeToSingleFile ,delimiter, writeHeader, quote, escape, encoding, quoteMode, timestampFormat, dateFormat)(sparkSession)
+  = new CSVMultifileWriter(dataToWrite,mergeToSingleFile ,delimiter, writeHeader, quote, escape, encoding, quoteMode, timestampFormat, dateFormat, nullValue)(sparkSession)
 }
