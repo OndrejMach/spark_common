@@ -13,8 +13,10 @@ class MSAccessSparkReader(path: String, tableName: String)(implicit sparkSession
   override def read(): DataFrame = {
     JdbcDialects.registerDialect(MSAccessJdbcDialect)
 
+    Class.forName("net.ucanaccess.jdbc.UcanaccessDriver")
     sparkSession.read
       .format("jdbc")
+      .option("driver", "net.ucanaccess.jdbc.UcanaccessDriver")
       .option("url", s"jdbc:ucanaccess://${path};memory=false")
       .option("dbtable", tableName)
       .load()
