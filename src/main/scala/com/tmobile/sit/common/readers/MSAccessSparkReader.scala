@@ -13,13 +13,31 @@ class MSAccessSparkReader(path: String, tableName: String)(implicit sparkSession
   override def read(): DataFrame = {
     JdbcDialects.registerDialect(MSAccessJdbcDialect)
 
+    val conf = sparkSession.sparkContext.hadoopConfiguration
+
+    import java.io.File
+    val file: File = File.createTempFile("temp", ".mdb")
+    println(file.getAbsolutePath)
+
+
+    val srcPath = new org.apache.hadoop.fs.Path(s"${path}")
+    val dstPath = new org.apache.hadoop.fs.Path(s"${file.getAbsolutePath}")
+
+    val fs = srcPath.getFileSystem(conf)
+
+    fs.copyToLocalFile(srcPath,dstPath )
+
+    file.getAbsoluteFile.deleteOnExit()
+
     Class.forName("net.ucanaccess.jdbc.UcanaccessDriver")
     sparkSession.read
       .format("jdbc")
       .option("driver", "net.ucanaccess.jdbc.UcanaccessDriver")
-      .option("url", s"jdbc:ucanaccess://${path};memory=false")
+      .option("url", s"jdbc:ucanaccess://${file};memory=false")
       .option("dbtable", tableName)
       .load()
+
+
   }
 }
 
