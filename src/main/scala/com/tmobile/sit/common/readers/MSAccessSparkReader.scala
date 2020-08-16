@@ -2,6 +2,7 @@ package com.tmobile.sit.common.readers
 
 import org.apache.spark.sql.jdbc.{JdbcDialect, JdbcDialects}
 import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.apache.spark.sql.functions.broadcast
 
 
 case object MSAccessJdbcDialect extends JdbcDialect {
@@ -30,14 +31,17 @@ class MSAccessSparkReader(path: String, tableName: String)(implicit sparkSession
     file.getAbsoluteFile.deleteOnExit()
 
     Class.forName("net.ucanaccess.jdbc.UcanaccessDriver")
-    sparkSession.read
+    val df = sparkSession.read
       .format("jdbc")
       .option("driver", "net.ucanaccess.jdbc.UcanaccessDriver")
       .option("url", s"jdbc:ucanaccess://${file};memory=false")
       .option("dbtable", tableName)
       .load()
+      .persist()
 
+    logger.info(s"MDB file with rowcount: ${df.count()} loaded")
 
+    broadcast(df)
   }
 }
 
