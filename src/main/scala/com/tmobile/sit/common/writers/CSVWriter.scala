@@ -40,7 +40,7 @@ class CSVWriter(data: DataFrame,
                 quote: String = "\"", escape: String = "\\",
                 encoding: String = "UTF-8", quoteMode: String = "MINIMAL",
                 timestampFormat: String = "MM/dd/yyyy HH:mm:ss.SSSZZ",
-                dateFormat: String = "yyyy-MM-dd", nullValue: String = "", quoteAll: String = "false")(implicit sparkSession: SparkSession) extends Merger with Writer {
+                dateFormat: String = "yyyy-MM-dd", nullValue: String = "", quoteAll: String = "false", emptyValue: String = null)(implicit sparkSession: SparkSession) extends Merger with Writer {
 
 
   def writeData() : Unit = {
@@ -59,6 +59,7 @@ class CSVWriter(data: DataFrame,
       .option("dateFormat", dateFormat)
       .option("nullValue", nullValue)
       .option("quoteAll",quoteAll )
+      .option("emptyValue", emptyValue)
       .csv(path+"_tmp")
 
     if (mergeToSingleFile) merge(path+"_tmp", path)
@@ -75,9 +76,9 @@ object CSVWriter {
             encoding: String = "UTF-8",
             quoteMode: String = "MINIMAL",
             timestampFormat: String = "MM/dd/yyyy HH:mm:ss.SSSZZ",
-            dateFormat: String = "yyyy-MM-dd", nullValue: String = "", quoteAll: String = "false")
+            dateFormat: String = "yyyy-MM-dd", nullValue: String = "", quoteAll: String = "false", emptyValue: String = null)
            (implicit sparkSession: SparkSession): CSVWriter =
 
-    new CSVWriter(data,path,mergeToSingleFile ,delimiter, writeHeader, quote, escape, encoding, quoteMode, timestampFormat, dateFormat, nullValue, quoteAll)(sparkSession)
+    new CSVWriter(data,path,mergeToSingleFile ,delimiter, writeHeader, quote, escape, encoding, quoteMode, timestampFormat, dateFormat, nullValue, quoteAll, emptyValue)(sparkSession)
 }
 
