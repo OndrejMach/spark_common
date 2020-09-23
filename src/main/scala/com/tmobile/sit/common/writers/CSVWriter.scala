@@ -1,20 +1,54 @@
 package com.tmobile.sit.common.writers
 
-import java.io.File
 
 import com.tmobile.sit.common.Logger
-import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{FileSystem, FileUtil, Path}
 import org.apache.spark.sql.{DataFrame, SaveMode, SparkSession}
+import scala.util.Try
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.{FileSystem, Path}
+import org.apache.hadoop.io.IOUtils
 
 private[writers] abstract class Merger extends Logger {
+  def copyMerge(
+                 srcFS: FileSystem, srcDir: Path,
+                 dstFS: FileSystem, dstFile: Path,
+                 deleteSource: Boolean, conf: Configuration
+               ): Boolean = {
+
+    if (dstFS.exists(dstFile))
+      dstFS.delete(dstFile, true)
+
+    // Source path is expected to be a directory:
+    if (srcFS.getFileStatus(srcDir).isDirectory()) {
+
+      val outputFile = dstFS.create(dstFile)
+      Try {
+        srcFS
+          .listStatus(srcDir)
+          .sortBy(_.getPath.getName)
+          .collect {
+            case status if status.isFile() =>
+              val inputFile = srcFS.open(status.getPath())
+              Try(IOUtils.copyBytes(inputFile, outputFile, conf, false))
+              inputFile.close()
+          }
+      }
+      outputFile.close()
+
+      if (deleteSource) srcFS.delete(srcDir, true) else true
+    }
+    else false
+  }
+
+
+
   def merge(srcPath: String, dstPath: String): Unit = {
     logger.info(s"Merging spark output ${srcPath} into a single file ${dstPath}")
     val hadoopConfig = new Configuration()
     val hdfs = FileSystem.get(hadoopConfig)
     hdfs.delete(new Path(dstPath), true)
     //FileUtil.fullyDelete(new File(dstPath))
-    FileUtil.copyMerge(hdfs, new Path(srcPath), hdfs, new Path(dstPath), true, hadoopConfig, null)
+    copyMerge(hdfs, new Path(srcPath), hdfs, new Path(dstPath), true, hadoopConfig)
   }
 }
 
