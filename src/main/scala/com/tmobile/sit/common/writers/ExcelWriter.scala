@@ -13,7 +13,7 @@ class ExcelWriter(data: DataFrame,filename: String,  sheetName: String = "", cel
   override def writeData(): Unit = {
     logger.info(s"Writing data to ${filename}, sheet: ${sheetName}")
     data
-      .coalesce(1)
+      .repartition(1)
       .write
       .format("com.crealytics.spark.excel")
       .option("sheetName", s"${sheetName}${cellRange}")
