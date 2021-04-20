@@ -25,7 +25,8 @@ private[readers] abstract class CsvGenericReader extends Logger {
                    encoding: String = "UTF-8",
                    schema: Option[StructType] = None,
                    timestampFormat: String = "MM/dd/yyyy HH:mm:ss.SSSZZ",
-                   dateFormat: String = "yyyy-MM-dd"
+                   dateFormat: String = "yyyy-MM-dd",
+                   multiline: Boolean = false
                   )(implicit sparkSession: SparkSession): DataFrameReader = {
     val reader = sparkSession
       .read
@@ -36,6 +37,7 @@ private[readers] abstract class CsvGenericReader extends Logger {
       .option("encoding", encoding)
       .option("timestampFormat", timestampFormat)
       .option("dateFormat", dateFormat)
+      .option("multiLine", multiline)
 
     val invalidHandling = if (badRecordsPath.isDefined) {
       logger.info(s"Bad records to be stored in ${badRecordsPath.get}")
@@ -76,12 +78,17 @@ class CSVReader(path: String,
                 encoding: String = "UTF-8",
                 schema: Option[StructType] = None,
                 timestampFormat: String = "MM/dd/yyyy HH:mm:ss.SSSZZ",
-                dateFormat: String = "yyyy-MM-dd"
+                dateFormat: String = "yyyy-MM-dd",
+                multiline: Boolean = false
                ) (implicit sparkSession: SparkSession) extends CsvGenericReader with Reader {
 
   private def getCsvData(path: String): DataFrame = {
     logger.info(s"Reading CSV from path ${path}")
-    val reader = getCSVReader(header, badRecordsPath, delimiter, quote, escape, encoding, schema, timestampFormat, dateFormat)
+    val reader = getCSVReader(
+      header, badRecordsPath, delimiter,
+      quote, escape, encoding,
+      schema, timestampFormat, dateFormat, multiline
+    )
     reader.csv(path)
 
   }
@@ -115,11 +122,17 @@ class CSVMultifileReader(path: String, fileList: Seq[String],
                          encoding: String = "UTF-8",
                          schema: Option[StructType] = None,
                          timestampFormat: String = "MM/dd/yyyy HH:mm:ss.SSSZZ",
-                         dateFormat: String = "yyyy-MM-dd")
+                         dateFormat: String = "yyyy-MM-dd",
+                         multiline: Boolean = false
+                        )
                         (implicit sparkSession: SparkSession) extends CsvGenericReader with Reader {
   private def getCsvData(path: String): DataFrame = {
     logger.info(s"Reading CSV from path ${path}")
-    val reader = getCSVReader(header, badRecordsPath, delimiter, quote, escape, encoding, schema, timestampFormat)
+    val reader = getCSVReader(
+      header, badRecordsPath, delimiter,
+      quote, escape, encoding,
+      schema, timestampFormat, dateFormat,multiline
+    )
     reader.csv(fileList.map(path + "/" + _): _*)
 
   }
@@ -141,10 +154,16 @@ object CSVReader {
             encoding: String = "UTF-8",
             schema: Option[StructType] = None,
             timestampFormat: String = "MM/dd/yyyy HH:mm:ss.SSSZZ",
-            dateFormat: String = "yyyy-MM-dd"
+            dateFormat: String = "yyyy-MM-dd",
+            multiline: Boolean = false
            )(implicit sparkSession: SparkSession): CSVReader =
 
-    new CSVReader(path, header, badRecordsPath, delimiter, quote, escape, encoding, schema, timestampFormat, dateFormat)(sparkSession)
+    new CSVReader(
+      path, header, badRecordsPath,
+      delimiter, quote, escape,
+      encoding, schema, timestampFormat,
+      dateFormat, multiline
+    )(sparkSession)
 }
 
 /**
@@ -161,8 +180,15 @@ object CSVMultifileReader {
             encoding: String = "UTF-8",
             schema: Option[StructType] = None,
             timestampFormat: String = "MM/dd/yyyy HH:mm:ss.SSSZZ",
-            dateFormat: String = "yyyy-MM-dd")
+            dateFormat: String = "yyyy-MM-dd",
+            multiline: Boolean = false
+           )
            (implicit sparkSession: SparkSession): CSVMultifileReader =
 
-    new CSVMultifileReader(path, fileList, header, badRecordsPath, delimiter, quote, escape, encoding, schema, timestampFormat, dateFormat)(sparkSession)
+    new CSVMultifileReader(
+      path, fileList, header,
+      badRecordsPath, delimiter, quote,
+      escape, encoding, schema,
+      timestampFormat, dateFormat, multiline
+    )(sparkSession)
 }
